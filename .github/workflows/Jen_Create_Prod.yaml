@@ -1,0 +1,61 @@
+name: VPC_Create_PROD
+
+permissions:
+  id-token: write
+  contents: read
+# on push
+#on:
+  #push:
+   # branches:
+    #  - main
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Auth to Google Cloud via OIDC
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/<POOL_ID>/providers/<PROVIDER_ID>" # add the new values
+          service_account: "<SERVICE_ACCOUNT_EMAIL>"  ### Add the newley created Service account
+          token_format: "access_token"
+          create_credentials_file: true
+      - name: authentication info display
+        run: printenv 
+      - name: Read Project ID from dev.tfvars
+        id: read_project
+        shell: bash
+        run: |
+          PROJECT_ID=$(grep -E '^project_id' dev.tfvars | awk -F'=' '{print $2}' | tr -d ' "')
+          if [ -z "$PROJECT_ID" ]; then
+            echo "project_id not found in dev.tfvars"; exit 1
+          fi
+          echo "PROJECT_ID=$PROJECT_ID" >> $GITHUB_ENV
+          echo "Detected project_id: $PROJECT_ID"
+      - name: Run API check script
+        run: |
+          chmod +x ./check-apis.sh
+          ./check-apis.sh $PROJECT_ID
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init 
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=prod.tfvars
+      - name: Terraform apply
+        run: terraform apply -var-file=prod.tfvars -auto-approve       
+
+      # Optional:
+      # - name: Terraform Apply
+      #   run: terraform apply -auto-approve

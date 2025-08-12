@@ -1,0 +1,30 @@
+name: OIDC_Connect
+
+permissions:
+  id-token: write
+  contents: read
+# on push
+#on:
+  #push:
+   # branches:
+    #  - main
+on:
+  workflow_call:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Auth to Google Cloud via OIDC
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/<POOL_ID>/providers/<PROVIDER_ID>" # add the new values
+          service_account: "<SERVICE_ACCOUNT_EMAIL>"  ### Add the newley created Service account
+          token_format: "access_token"
+          create_credentials_file: true

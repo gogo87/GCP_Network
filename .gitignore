@@ -1,0 +1,37 @@
+# === Terraform directories and files ===
+.terraform/
+*.tfstate
+*.tfstate.*
+*.backup
+*.tfvars
+*.tfvars.json
+.terraform.lock.hcl
+*.crash
+*.log
+
+# === Override files (local config) ===
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+
+# === Windows system files ===
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# === Visual Studio Code ===
+.vscode/
+
+# === Powershell history ===
+PSReadlineConsoleHost_history.txt
+
+# === Temporary files ===
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# === Logs ===
+*.log
